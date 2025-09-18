@@ -39,9 +39,14 @@ table th, table td{padding:15px;text-align:left;border-bottom:1px solid #eee;}
 table th{background:#f8f9fa;font-weight:600;color:var(--primary);position:sticky;top:0;}
 .section-card{margin-bottom:30px;background:white;border-radius:var(--card-border-radius);box-shadow:0 5px 15px rgba(0,0,0,0.05);padding:25px;}
 .section-card h3{font-size:20px;font-weight:600;margin-bottom:20px;color:var(--primary);}
+input, select{padding:8px;border-radius:6px;border:1px solid #ccc;width:100%;margin-bottom:10px;}
+button{padding:10px 20px;background:#C6A972;color:#fff;border:none;border-radius:6px;cursor:pointer;}
+button:hover{background:#B5925E;}
 </style>
 </head>
 <body>
+
+@php $user = Auth::user(); @endphp
 
 <div class="sidebar">
   <div class="sidebar-header">
@@ -60,8 +65,15 @@ table th{background:#f8f9fa;font-weight:600;color:var(--primary);position:sticky
     <li><a href="{{ route('products.index') }}"><i class="fas fa-box"></i> Products</a></li>
     <li><a href="{{ route('offers.index') }}"><i class="fas fa-gift"></i> Offers</a></li>
     <li><a href="{{ route('offer_products.index') }}"><i class="fas fa-tags"></i> Offer Products</a></li>
-    <li><a href="{{ route('branches.index') }}"><i class="fas fa-store"></i> Branches</a></li>
-    <li><a href="{{ route('warehouses.index') }}"><i class="fas fa-warehouse"></i> Warehouses</a></li>
+
+    @if($user->role !== 'warehouse')
+      <li><a href="{{ route('branches.index') }}"><i class="fas fa-store"></i> Branches</a></li>
+    @endif
+
+    @if($user->role !== 'branch')
+      <li><a href="{{ route('warehouses.index') }}"><i class="fas fa-warehouse"></i> Warehouses</a></li>
+    @endif
+
     <li><a href="{{ route('stocks.index') }}"><i class="fas fa-clipboard-list"></i> Stocks</a></li>
     <li><a href="{{ route('transactions.index') }}"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
     <li><a href="{{ route('special-requests.index') }}"><i class="fas fa-star"></i> Special Requests</a></li>
@@ -78,6 +90,28 @@ table th{background:#f8f9fa;font-weight:600;color:var(--primary);position:sticky
     <div class="card"><div class="icon"><i class="fas fa-warehouse"></i></div><h3>Total Warehouses</h3><div class="stat">{{ $data['totalWarehouses'] }}</div></div>
     <div class="card"><div class="icon"><i class="fas fa-exchange-alt"></i></div><h3>Total Transactions</h3><div class="stat">{{ $data['totalTransactions'] }}</div></div>
   </div>
+
+  <!-- Form لإضافة مستخدم جديد يظهر فقط لل general -->
+  @if($user->role === 'general')
+  <div class="section-card">
+      <h3><i class="fas fa-user-plus"></i> Add New User</h3>
+      @if(session('success'))
+          <p style="color:green;">{{ session('success') }}</p>
+      @endif
+      <form id="addUserForm" action="{{ route('users.store') }}" method="POST">
+          @csrf
+          <input type="text" name="name" placeholder="Name" required>
+          <input type="email" name="email" placeholder="Email" required>
+          <input type="password" name="password" placeholder="Password" required>
+          <select name="role" required>
+              <option value="admin">Admin</option>
+              <option value="branch">Branch</option>
+              <option value="warehouse">Warehouse</option>
+          </select>
+          <button type="submit">Create User</button>
+      </form>
+  </div>
+  @endif
 
   <!-- Transactions Table -->
   <div class="section-card">
@@ -144,5 +178,6 @@ table th{background:#f8f9fa;font-weight:600;color:var(--primary);position:sticky
   </div>
 
 </div>
+
 </body>
-</html>
+</html>  
